@@ -3,25 +3,30 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { createStore, combineReducers } from 'redux';
+import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
+import logger from 'redux-logger';
 
 // reducers, kinda like .reduce() array method in JS
 // similar to const [count, setCount] = useState(0);
 const count = (state = 110, action) => {
-  console.log(`Hi, I'm a reducer!`, action);
-
   switch (action.type) {
     case 'INCREASE':
       return state + 1;
     case 'DECREASE':
       return state - 1;
+    default:
+      return state;
   }
-
-  return state;
 };
 
 const elementList = (state = [], action) => {
+  if (action.type === 'ADD_ELEMENT') {
+    // using methods like .push() is array mutation, react/redux don't like it
+    // we need to create a new array with old array data and adding new data
+    // so, use the spread operator to break the state array and make a new one!
+    return [...state, action.payload];
+  }
   return state;
 };
 
@@ -30,7 +35,8 @@ const storeInstance = createStore(
   combineReducers({
     count,
     elementList,
-  })
+  }),
+  applyMiddleware(logger)
 );
 
 ReactDOM.render(
